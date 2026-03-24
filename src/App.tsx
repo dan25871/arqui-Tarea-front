@@ -4,44 +4,59 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
-import TutorList from './pages/TutorList';
-import TutorDetail from './pages/TutorDetail';
+import TutorialList from './pages/TutorList';
+import TutorialDetail from './pages/TutorDetail';
 import CreateBooking from './pages/CreateBooking';
 import MyBookings from './pages/MyBookings';
-import TutorPanel from './pages/TutorPanel';
+import TutorialPanel from './pages/TutorPanel';
 import Navbar from './components/Navbar';
 
-const PrivateRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/login" />;
+// Corrección de tipos y desestructuración de useAuth
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { isAuthenticated } = useAuth();
+    return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
-const PublicRoute: React.FC<{ children: React.ReactElement }> = ({ children }) => {
-  const { isAuthenticated } = useAuth();
-  return !isAuthenticated ? children : <Navigate to="/dashboard" />;
+const PublicRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+    const { isAuthenticated } = useAuth();
+    return isAuthenticated ? <Navigate to="/dashboard" /> : <>{children}</>;
 };
 
 const AppRoutes: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+    const { isAuthenticated } = useAuth();
 
-  return (
-    <>
-      {isAuthenticated && <Navbar />}
-      <div className="container">
-        <Routes>
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
-          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/tutores" element={<PrivateRoute><TutorList /></PrivateRoute>} />
-          <Route path="/tutores/:id" element={<PrivateRoute><TutorDetail /></PrivateRoute>} />
-          <Route path="/reservar/:tutorId" element={<PrivateRoute><CreateBooking /></PrivateRoute>} />
-          <Route path="/mis-reservas" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
-          <Route path="/tutor-panel" element={<PrivateRoute><TutorPanel /></PrivateRoute>} />
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-        </Routes>
-      </div>
-    </>
-  );
+    return (
+        <>
+            {isAuthenticated && <Navbar />}
+            <div className="container">
+                <Routes>
+                    {/* Agregado Login dentro de PublicRoute */}
+                    <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+                    <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
+                    
+                    <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+                    <Route path="/tutorials" element={<PrivateRoute><TutorialList /></PrivateRoute>} />
+                    <Route path="/tutorials/:id" element={<PrivateRoute><TutorialDetail /></PrivateRoute>} />
+                    <Route path="/reservar/tutorial" element={<PrivateRoute><CreateBooking /></PrivateRoute>} />
+                    <Route path="/api/reservas" element={<PrivateRoute><MyBookings /></PrivateRoute>} />
+                    <Route path="/api/tutor-panel" element={<PrivateRoute><TutorialPanel /></PrivateRoute>} />
+                    
+                    {/* Redirección por defecto */}
+                    <Route path="*" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} />} />
+                </Routes>
+            </div>
+        </>
+    );
 };
 
-export default AppRoutes;
+const App: React.FC = () => {
+    return (
+        <AuthProvider>
+            <Router>
+                <AppRoutes />
+            </Router>
+        </AuthProvider>
+    );
+};
+
+export default App;
